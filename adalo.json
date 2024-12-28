@@ -1,0 +1,14 @@
+{
+  "displayName": "MomentoEditor",
+  "components": [
+    {
+      "name": "Editor",
+      "manifest": "./src/components/Editor/manifest.json"
+    }
+  ],
+  "author": "Momento", 
+  "description": "A custom text input editor for Adalo.", 
+  "logo": "./example-logo.png",
+  "demoAppURL": "UPDATE THIS LATER",
+  "supportURL": "UPDATE THIS LATER"
+}
