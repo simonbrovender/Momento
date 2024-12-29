@@ -175,10 +175,47 @@ const Editor = ({ value, onChange }) => {
   </label>
   {/* Save Button */}
   <button
-    onClick={() => {
-      const currentContent = editor.getHTML(); // Get the current content from the editor
-      console.log('Saved content:', currentContent); // Log the content (just for this step)
-    }}
+	onClick={async () => {
+		const currentContent = editor.getHTML(); // Get the current content from the editor
+		const airtableBaseId = "appWmqaUZJE2BydBx"; // Replace with your Airtable Base ID
+		const tableName = "Entries"; // Replace with your Airtable Table Name
+		const airtableToken = "patAsvrZLUNh4oK8R.90978d3db1f5b57aa9aa7f51f2a0c58c98e9677cc8f2fe3f864076e3ab14f3f4"; // Replace with your Airtable PAT
+	
+		// Define the URL for the POST request
+		const url = `https://api.airtable.com/v0/${airtableBaseId}/${tableName}`;
+	
+		// Define the request body with the "Entry Content" field
+		const body = {
+		fields: {
+			"Entry Content": currentContent, // This maps to your Airtable field name
+			"Entry Title": "New Entry", // You can adjust or make this dynamic
+		},
+		};
+	
+		try {
+		// Send a POST request to Airtable
+		const response = await fetch(url, {
+			method: "POST",
+			headers: {
+			"Authorization": `Bearer ${airtableToken}`,
+			"Content-Type": "application/json",
+			},
+			body: JSON.stringify(body), // Convert the body to a JSON string
+		});
+	
+		// Check for success
+		if (!response.ok) {
+			throw new Error(`Error: ${response.status} - ${response.statusText}`);
+		}
+	
+		const data = await response.json(); // Parse the response JSON
+		console.log("New entry created successfully:", data);
+		alert("Entry saved to Airtable!"); // Notify the user
+		} catch (error) {
+		console.error("Failed to create entry in Airtable:", error);
+		alert("Failed to save entry. Please try again."); // Notify the user
+		}
+	}}
     style={{
       cursor: 'pointer',
       border: 'none',
