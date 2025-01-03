@@ -13,7 +13,7 @@ import TextStyle from '@tiptap/extension-text-style';
 import Color from '@tiptap/extension-color';
 import { FaSave } from 'react-icons/fa';
 
-const Editor = ({ value, onChange }) => {
+const Editor = ({ value, userId, entryId, onChange }) => {
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -189,6 +189,8 @@ const Editor = ({ value, onChange }) => {
 		fields: {
 			"Entry Content": currentContent, // This maps to your Airtable field name
 			"Entry Title": "New Entry", // You can adjust or make this dynamic
+			"User ID": userId, // Adalo User ID
+			"Entry ID": entryId // Adalo Entry ID
 		},
 		};
 	
