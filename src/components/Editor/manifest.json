@@ -6,20 +6,20 @@
   "icon": "./example-thumbnail.png",
   "props": [
     {
-      "name": "text",
-      "displayName": "Text",
-      "type": "text",
-      "default": "Happy Hacking"
-    },
-    {
-      "name": "color",
-      "displayName": "Color",
-      "type": "color",
-      "default": "#00A898"
-    },
-    {
       "name": "value",
       "displayName": "Value",
+      "type": "text",
+      "default": ""
+    },
+    {
+      "name": "userId",
+      "displayName": "User ID",
+      "type": "text",
+      "default": ""
+    },
+    {
+      "name": "entryId",
+      "displayName": "Entry ID",
       "type": "text",
       "default": ""
     }
