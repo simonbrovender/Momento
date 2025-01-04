@@ -13,6 +13,39 @@ import TextStyle from '@tiptap/extension-text-style';
 import Color from '@tiptap/extension-color';
 import { FaSave } from 'react-icons/fa';
 
+const uploadToCloudinary = async (base64String) => {
+	try {
+	  console.log("Uploading Base64 to Cloudinary..."); // Debugging log
+	  console.log("Base64 String:", base64String.slice(0, 100)); // Log first 100 characters for verification
+  
+	  const response = await fetch('https://api.cloudinary.com/v1_1/dbfvapzxl/image/upload', {
+		method: 'POST',
+		headers: {
+		  'Content-Type': 'application/json',
+		},
+		body: JSON.stringify({
+		  file: base64String,          // Base64 string
+		  upload_preset: 'unsigned',   // Your unsigned preset
+		  folder: 'folder',    // Static folder name for all uploads
+		}),
+	  });
+  
+	  if (!response.ok) {
+		const errorText = await response.text(); // Get error details
+		console.error("Cloudinary Error Response:", errorText); // Log full error details
+		throw new Error(`Cloudinary upload failed: ${response.statusText}`);
+	  }
+  
+	  const data = await response.json();
+	  console.log("Cloudinary Upload Successful:", data); // Log success response
+	  return data.secure_url;
+	} catch (error) {
+	  console.error("Error uploading to Cloudinary:", error);
+	  throw error;
+	}
+  };
+  
+
 const Editor = ({ value, userId, entryId, onChange }) => {
   const editor = useEditor({
     extensions: [
@@ -27,12 +60,42 @@ const Editor = ({ value, userId, entryId, onChange }) => {
 	  TextStyle, // Required for inline styling
 	  Color, // Enables font color functionality
     ],
-    content: value || '',
-    onUpdate: ({ editor }) => {
-      if (onChange) {
-        onChange(editor.getHTML()); // Send updated HTML content to Adalo
-      }
-    },
+	content: value || '', // Use the `value` prop to initialize the content
+	onUpdate: async ({ editor }) => {
+		let htmlContent = editor.getHTML(); // Current HTML content from the editor
+	  
+		// Regex to find Base64 image strings in the HTML
+		const base64ImageRegex = /<img[^>]+src=["'](data:image\/[^;]+;base64[^"']+)["']/g;
+	  
+		let match;
+		let updatedContent = htmlContent; // Start with the original content
+	  
+		// Iterate through all Base64 strings found in the HTML
+		while ((match = base64ImageRegex.exec(htmlContent)) !== null) {
+		  const base64String = match[1]; // Extract the Base64 string
+	  
+		  try {
+			// Upload Base64 string to Cloudinary
+			const cloudinaryUrl = await uploadToCloudinary(base64String, userId, entryId);
+	  
+			// Replace the Base64 string with the Cloudinary URL in the HTML content
+			updatedContent = updatedContent.replace(base64String, cloudinaryUrl);
+		  } catch (error) {
+			console.error('Failed to upload image to Cloudinary:', error);
+		  }
+		}
+	  
+		// Update the editor's content if changes were made
+		if (updatedContent !== htmlContent) {
+		  editor.commands.setContent(updatedContent); // Update the editor's content
+		}
+	  
+		// Send updated HTML content back to Adalo
+		if (onChange) {
+		  onChange(updatedContent);
+		}
+	  },
+	  
   });
 
   const hiddenRef = useRef(null); // Reference for hidden replica
@@ -64,16 +127,27 @@ const Editor = ({ value, userId, entryId, onChange }) => {
     return <div>Loading editor...</div>;
   }
 
-  const handleImageUpload = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        editor.chain().focus().setImage({ src: reader.result }).run(); // Insert image into the editor
-      };
-      reader.readAsDataURL(file); // Read file as a Data URL
-    }
+  const handleImageUpload = async (event) => {
+	const file = event.target.files[0];
+	if (file) {
+	  const reader = new FileReader();
+	  reader.onload = async () => {
+		const base64String = reader.result; // Base64 string from the uploaded file
+  
+		try {
+		  // Upload the Base64 string to Cloudinary
+		  const cloudinaryUrl = await uploadToCloudinary(base64String, userId, entryId);
+  
+		  // Replace the Base64 string with the Cloudinary URL in the editor
+		  editor.chain().focus().setImage({ src: cloudinaryUrl }).run();
+		} catch (error) {
+		  alert('Image upload failed. Please try again.'); // Notify user of failure
+		}
+	  };
+	  reader.readAsDataURL(file); // Read the file as a Base64 string
+	}
   };
+  
 
   return (
     <div
