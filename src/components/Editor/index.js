@@ -249,97 +249,101 @@ const Editor = ({ value, userId, entryId, onChange }) => {
   </label>
   {/* Save Button */}
   <button
-onClick={async () => {
-	const currentContent = editor.getHTML(); // Get the current content from the editor
-  
-	// Extract all image URLs from the content
-	const imageUrlRegex = /<img[^>]+src=["']([^"']+)["']/g;
-	let match;
-	const imageUrls = [];
-  
-	// Collect all image URLs into an array
-	while ((match = imageUrlRegex.exec(currentContent)) !== null) {
-	  imageUrls.push(match[1]);
-	}
-  
-	const airtableBaseId = "appWmqaUZJE2BydBx"; // Replace with your Airtable Base ID
-	const entriesTable = "Entries"; // Replace with your Entries Table Name
-	const imagesTable = "Images"; // Replace with your Images Table Name
-	const airtableToken = "patAsvrZLUNh4oK8R.90978d3db1f5b57aa9aa7f51f2a0c58c98e9677cc8f2fe3f864076e3ab14f3f4"; // Replace with your Airtable PAT
-  
-	const entriesUrl = `https://api.airtable.com/v0/${airtableBaseId}/${entriesTable}`;
-	const imagesUrl = `https://api.airtable.com/v0/${airtableBaseId}/${imagesTable}`;
-  
-	// Save the entry content to Airtable
-	const entryTitle = "New Entry"; // Replace this with dynamic entry title if needed
-	const entryBody = {
-	  fields: {
-		"Entry Content": currentContent, // HTML content
-		"Entry Title": entryTitle, // Entry title for linking
-		"User ID": userId, // Adalo User ID
-		"Entry ID": entryId, // Adalo Entry ID
-	  },
-	};
-  
-	try {
-	  // Save the entry to the Entries table
-	  const entryResponse = await fetch(entriesUrl, {
-		method: "POST",
-		headers: {
-		  Authorization: `Bearer ${airtableToken}`,
-		  "Content-Type": "application/json",
+	onClick={async () => {
+		const currentContent = editor.getHTML(); // Get the current content from the editor
+	
+		// Extract all image URLs from the content
+		const imageUrlRegex = /<img[^>]+src=["']([^"']+)["']/g;
+		let match;
+		const imageUrls = [];
+	
+		// Collect all image URLs into an array
+		while ((match = imageUrlRegex.exec(currentContent)) !== null) {
+		imageUrls.push(match[1]);
+		}
+	
+		const airtableBaseId = "appWmqaUZJE2BydBx"; // Replace with your Airtable Base ID
+		const entriesTable = "Entries"; // Replace with your Entries Table Name
+		const imagesTable = "Images"; // Replace with your Images Table Name
+		const airtableToken = "patAsvrZLUNh4oK8R.90978d3db1f5b57aa9aa7f51f2a0c58c98e9677cc8f2fe3f864076e3ab14f3f4"; // Replace with your Airtable PAT
+	
+		const entriesUrl = `https://api.airtable.com/v0/${airtableBaseId}/${entriesTable}`;
+		const imagesUrl = `https://api.airtable.com/v0/${airtableBaseId}/${imagesTable}`;
+	
+		// Save the entry content to Airtable
+		const entryTitle = "New Entry"; // Replace this with dynamic entry title if needed
+		const entryBody = {
+		fields: {
+			"Entry Content": currentContent, // HTML content
+			"Entry Title": entryTitle, // Entry title for linking
+			"User ID": userId, // Adalo User ID
+			"Entry ID": entryId, // Adalo Entry ID
+			"Photo URL": imageUrls[0] || "", // Save the first image URL as text (if available)
+			"Cover Photo": imageUrls[0] ? [{ url: imageUrls[0] }] : undefined, // Save the first image as an attachment (if available)
 		},
-		body: JSON.stringify(entryBody),
-	  });
-  
-	  if (!entryResponse.ok) {
-		throw new Error(`Error: ${entryResponse.status} - ${entryResponse.statusText}`);
-	  }
-  
-	  const entryData = await entryResponse.json();
-	  const entryRecordId = entryData.id; // Use the ID of the newly created entry
-  
-	  console.log("New entry created successfully:", entryData);
-  
-	  // Save each image to the Images table
-	  for (const imageUrl of imageUrls) {
+		};
+	
 		try {
-		  const imageBody = {
-			fields: {
-			  "Image URLs": [{ url: imageUrl }], // Attach the image URL
-			  "Related Entry": [entryRecordId], // Link to the entry using its record ID
-			},
-		  };
-  
-		  const imageResponse = await fetch(imagesUrl, {
+		// Save the entry to the Entries table
+		const entryResponse = await fetch(entriesUrl, {
 			method: "POST",
 			headers: {
-			  Authorization: `Bearer ${airtableToken}`,
-			  "Content-Type": "application/json",
+			Authorization: `Bearer ${airtableToken}`,
+			"Content-Type": "application/json",
 			},
-			body: JSON.stringify(imageBody),
-		  });
-  
-		  if (!imageResponse.ok) {
-			const errorDetails = await imageResponse.text();
-			console.error("Airtable Image Upload Error Details:", errorDetails);
-			throw new Error(`Error: ${imageResponse.status} - ${imageResponse.statusText}`);
-		  }
-  
-		  const imageData = await imageResponse.json();
-		  console.log("Image added successfully:", imageData);
-		} catch (error) {
-		  console.error("Failed to save image in Airtable:", error);
-		  alert("Failed to save an image. Please try again.");
+			body: JSON.stringify(entryBody),
+		});
+	
+		if (!entryResponse.ok) {
+			throw new Error(`Error: ${entryResponse.status} - ${entryResponse.statusText}`);
 		}
-	  }
+	
+		const entryData = await entryResponse.json();
+		const relatedEntryTitle = entryData.fields["Entry Title"]; // Airtable Entry Title of the newly created entry
+	
+		console.log("New entry created successfully:", entryData);
+	
+		// Save each image to the Images table
+		for (const imageUrl of imageUrls) {
+			try {
+			const imageBody = {
+				fields: {
+				"Image URLs": [{ url: imageUrl }], // Attach the image URL
+				"Related Entry": relatedEntryTitle, // Use the entry title for linking
+				},
+			};
+	
+			const imageResponse = await fetch(imagesUrl, {
+				method: "POST",
+				headers: {
+				Authorization: `Bearer ${airtableToken}`,
+				"Content-Type": "application/json",
+				},
+				body: JSON.stringify(imageBody),
+			});
+	
+			if (!imageResponse.ok) {
+				const errorDetails = await imageResponse.text();
+				console.error("Airtable Image Upload Error Details:", errorDetails);
+				throw new Error(`Error: ${imageResponse.status} - ${imageResponse.statusText}`);
+			}
+	
+			const imageData = await imageResponse.json();
+			console.log("Image added successfully:", imageData);
+			} catch (error) {
+			console.error("Failed to save image in Airtable:", error);
+			alert("Failed to save an image. Please try again.");
+			}
+		}
+	
+		alert("Entry and images saved to Airtable!"); // Notify user
+		} catch (error) {
+		console.error("Failed to save entry or images in Airtable:", error);
+		alert("Failed to save entry or images. Please try again."); // Notify user
+		}
+	}}
   
-	  alert("Entry and images saved to Airtable!"); // Notify user
-	} catch (error) {
-	  console.error("Failed to save entry or images in Airtable:", error);
-	  alert("Failed to save entry or images. Please try again."); // Notify user
-	}
-  }}
+
   
   style={{
     cursor: "pointer",
