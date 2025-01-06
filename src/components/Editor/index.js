@@ -173,16 +173,19 @@ const Editor = ({ value, userId, entryId, onChange }) => {
 {/* Toolbar */}
 <div
   style={{
-    marginBottom: '10px',
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
     position: 'sticky', // Make the toolbar sticky
-    top: '0', // Stick to the top of the viewport
+    top: '10px', // Stick to the top of the viewport
     zIndex: '1000', // Ensure it stays above other content
-    backgroundColor: 'white', // Prevent content from showing through
-    padding: '10px 0', // Add some spacing for aesthetic
-    borderBottom: '1px solid #ddd', // Optional: Visual separation from the editor
+    backgroundColor: '#F0F4FA', // Prevent content from showing through
+    padding: '15px 20px', // Add some spacing for aesthetic
+    border: '1px solid #ddd', // Optional: Visual separation from the editor
+	borderRadius: '70px', // Add 8px border radius for rounded corners
+	width: 'calc(100% - 20px)', // Make the width 20px narrower than the input field
+	margin: '0 auto', // Center the toolbar horizontally
+    marginBottom: '20px',
   }}
 >
   {/* Left Side Buttons */}
@@ -406,7 +409,7 @@ const Editor = ({ value, userId, entryId, onChange }) => {
         style={{
           minHeight: '1140px',
           padding: '12%',
-          border: '1px solid #eee',
+          border: '1px solid #ddd',
           borderRadius: '4px',
           fontFamily: 'Arial, sans-serif',
           fontSize: '14px',
