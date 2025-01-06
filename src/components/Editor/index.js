@@ -181,7 +181,7 @@ const Editor = ({ value, userId, entryId, onChange }) => {
     zIndex: '1000', // Ensure it stays above other content
     backgroundColor: '#F0F4FA', // Prevent content from showing through
     padding: '15px 20px', // Add some spacing for aesthetic
-    border: '1px solid #ddd', // Optional: Visual separation from the editor
+    border: 'none', // Optional: Visual separation from the editor
 	borderRadius: '70px', // Add 8px border radius for rounded corners
 	width: 'calc(100% - 20px)', // Make the width 20px narrower than the input field
 	margin: '0 auto', // Center the toolbar horizontally
@@ -197,6 +197,7 @@ const Editor = ({ value, userId, entryId, onChange }) => {
         border: 'none',
         background: 'none',
         fontSize: '18px',
+		color: '#454746',
       }}
       title="Bold"
     >
@@ -209,6 +210,7 @@ const Editor = ({ value, userId, entryId, onChange }) => {
         border: 'none',
         background: 'none',
         fontSize: '18px',
+		color: '#454746',
       }}
       title="Italic"
     >
@@ -221,6 +223,7 @@ const Editor = ({ value, userId, entryId, onChange }) => {
         border: 'none',
         background: 'none',
         fontSize: '18px',
+		color: '#454746',
       }}
       title="Bullet List"
     >
@@ -233,6 +236,7 @@ const Editor = ({ value, userId, entryId, onChange }) => {
         border: 'none',
         background: 'none',
         fontSize: '18px',
+		color: '#454746',
       }}
       title="Ordered List"
     >
@@ -251,6 +255,7 @@ const Editor = ({ value, userId, entryId, onChange }) => {
           fontSize: '18px',
           border: 'none',
           background: 'none',
+		  color: '#454746',
         }}
         title="Insert Image"
       >
@@ -365,6 +370,7 @@ const Editor = ({ value, userId, entryId, onChange }) => {
     border: "none",
     background: "none",
     fontSize: "18px",
+	color: '#454746',
   }}
   title="Save"
 >
