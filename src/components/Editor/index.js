@@ -170,83 +170,91 @@ const Editor = ({ value, userId, entryId, onChange }) => {
           }
         `}
       </style>
-	  <div
+{/* Toolbar */}
+<div
   style={{
     marginBottom: '10px',
     display: 'flex',
-    justifyContent: 'space-between', // Ensure buttons align to opposite sides
+    justifyContent: 'space-between',
     alignItems: 'center',
+    position: 'sticky', // Make the toolbar sticky
+    top: '0', // Stick to the top of the viewport
+    zIndex: '1000', // Ensure it stays above other content
+    backgroundColor: 'white', // Prevent content from showing through
+    padding: '10px 0', // Add some spacing for aesthetic
+    borderBottom: '1px solid #ddd', // Optional: Visual separation from the editor
   }}
 >
-{/* Left Side Buttons */}
-<div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-  <button
-    onClick={() => editor.chain().focus().toggleBold().run()}
-    style={{
-      cursor: 'pointer',
-      border: 'none',
-      background: 'none',
-      fontSize: '18px',
-    }}
-    title="Bold"
-  >
-    <FaBold />
-  </button>
-  <button
-    onClick={() => editor.chain().focus().toggleItalic().run()}
-    style={{
-      cursor: 'pointer',
-      border: 'none',
-      background: 'none',
-      fontSize: '18px',
-    }}
-    title="Italic"
-  >
-    <FaItalic />
-  </button>
-  <button
-    onClick={() => editor.chain().focus().toggleBulletList().run()}
-    style={{
-      cursor: 'pointer',
-      border: 'none',
-      background: 'none',
-      fontSize: '18px',
-    }}
-    title="Bullet List"
-  >
-    <FaListUl />
-  </button>
-  <button
-    onClick={() => editor.chain().focus().toggleOrderedList().run()}
-    style={{
-      cursor: 'pointer',
-      border: 'none',
-      background: 'none',
-      fontSize: '18px',
-    }}
-    title="Ordered List"
-  >
-    <FaListOl />
-  </button>
-  <label>
-    <input
-      type="file"
-      accept="image/*"
-      onChange={handleImageUpload}
-      style={{ display: 'none' }}
-    />
-    <span
+  {/* Left Side Buttons */}
+  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+    <button
+      onClick={() => editor.chain().focus().toggleBold().run()}
       style={{
         cursor: 'pointer',
-        fontSize: '18px',
         border: 'none',
         background: 'none',
+        fontSize: '18px',
       }}
-      title="Insert Image"
+      title="Bold"
     >
-      <FaImage />
-    </span>
-  </label>
+      <FaBold />
+    </button>
+    <button
+      onClick={() => editor.chain().focus().toggleItalic().run()}
+      style={{
+        cursor: 'pointer',
+        border: 'none',
+        background: 'none',
+        fontSize: '18px',
+      }}
+      title="Italic"
+    >
+      <FaItalic />
+    </button>
+    <button
+      onClick={() => editor.chain().focus().toggleBulletList().run()}
+      style={{
+        cursor: 'pointer',
+        border: 'none',
+        background: 'none',
+        fontSize: '18px',
+      }}
+      title="Bullet List"
+    >
+      <FaListUl />
+    </button>
+    <button
+      onClick={() => editor.chain().focus().toggleOrderedList().run()}
+      style={{
+        cursor: 'pointer',
+        border: 'none',
+        background: 'none',
+        fontSize: '18px',
+      }}
+      title="Ordered List"
+    >
+      <FaListOl />
+    </button>
+    <label>
+      <input
+        type="file"
+        accept="image/*"
+        onChange={handleImageUpload}
+        style={{ display: 'none' }}
+      />
+      <span
+        style={{
+          cursor: 'pointer',
+          fontSize: '18px',
+          border: 'none',
+          background: 'none',
+        }}
+        title="Insert Image"
+      >
+        <FaImage />
+      </span>
+    </label>
+
   {/* Save Button */}
   <button
 	onClick={async () => {
@@ -359,8 +367,7 @@ const Editor = ({ value, userId, entryId, onChange }) => {
 >
   <FaSave />
 </button>
-</div>
-  
+  </div>
 
   {/* Right Side Color Buttons */}
   <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
@@ -392,6 +399,7 @@ const Editor = ({ value, userId, entryId, onChange }) => {
     ))}
   </div>
 </div>
+
       <div
         ref={editorRef}
         onClick={() => editor.chain().focus().run()}
