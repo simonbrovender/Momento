@@ -250,9 +250,13 @@ const Editor = ({ value, userId, entryId, onChange }) => {
   {/* Save Button */}
   <button
 	onClick={async () => {
-		const currentContent = editor.getHTML(); // Get the current content from the editor
+		const currentContent = editor.getHTML(); // Get the current content as an HTML string
 	
-		// Extract all image URLs from the content
+		// Remove image tags from the HTML before extracting plain text
+		const contentWithoutImages = currentContent.replace(/<img[^>]*>/g, ""); // Remove all <img> tags
+		const plainTextContent = contentWithoutImages.replace(/<[^>]+>/g, ""); // Remove all remaining HTML tags
+	
+		// Extract all image URLs from the original content
 		const imageUrlRegex = /<img[^>]+src=["']([^"']+)["']/g;
 		let match;
 		const imageUrls = [];
@@ -274,7 +278,8 @@ const Editor = ({ value, userId, entryId, onChange }) => {
 		const entryTitle = "New Entry"; // Replace this with dynamic entry title if needed
 		const entryBody = {
 		fields: {
-			"Entry Content": currentContent, // HTML content
+			"Formatted Text": currentContent, // Full HTML content
+			"Plain Text": plainTextContent, // Clean plain text without images or formatting
 			"Entry Title": entryTitle, // Entry title for linking
 			"User ID": userId, // Adalo User ID
 			"Entry ID": entryId, // Adalo Entry ID
@@ -299,7 +304,7 @@ const Editor = ({ value, userId, entryId, onChange }) => {
 		}
 	
 		const entryData = await entryResponse.json();
-		const relatedEntryTitle = entryData.fields["Entry Title"]; // Airtable Entry Title of the newly created entry
+		const entryRecordId = entryData.id; // Retrieve the record ID of the newly created entry
 	
 		console.log("New entry created successfully:", entryData);
 	
@@ -308,8 +313,9 @@ const Editor = ({ value, userId, entryId, onChange }) => {
 			try {
 			const imageBody = {
 				fields: {
-				"Image URLs": [{ url: imageUrl }], // Attach the image URL
-				"Related Entry": relatedEntryTitle, // Use the entry title for linking
+				"Image File": [{ url: imageUrl }], // Attach the image URL
+				"Photo URL": imageUrl, // Save the image URL as plain text
+				"Related Entry": [entryRecordId], // Use the record ID for linking
 				},
 			};
 	
@@ -341,9 +347,7 @@ const Editor = ({ value, userId, entryId, onChange }) => {
 		console.error("Failed to save entry or images in Airtable:", error);
 		alert("Failed to save entry or images. Please try again."); // Notify user
 		}
-	}}
-  
-
+	}}  
   
   style={{
     cursor: "pointer",
