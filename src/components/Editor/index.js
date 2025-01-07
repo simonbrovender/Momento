@@ -46,7 +46,7 @@ const uploadToCloudinary = async (base64String) => {
   };
   
 
-const Editor = ({ value, userId, entryId, onChange }) => {
+  const Editor = ({ value, userId, entryId, entryTitle, onChange }) => {
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -179,11 +179,11 @@ const Editor = ({ value, userId, entryId, onChange }) => {
     position: 'sticky', // Make the toolbar sticky
     top: '10px', // Stick to the top of the viewport
     zIndex: '1000', // Ensure it stays above other content
-    backgroundColor: '#F0F4FA', // Prevent content from showing through
+    backgroundColor: '#DAE0FF', // Prevent content from showing through
     padding: '15px 20px', // Add some spacing for aesthetic
     border: 'none', // Optional: Visual separation from the editor
 	borderRadius: '70px', // Add 8px border radius for rounded corners
-	width: 'calc(100% - 20px)', // Make the width 20px narrower than the input field
+	width: 'calc(100% - 40px)', // Make the width 20px narrower than the input field
 	margin: '0 auto', // Center the toolbar horizontally
     marginBottom: '20px',
   }}
@@ -291,18 +291,19 @@ const Editor = ({ value, userId, entryId, onChange }) => {
 		const imagesUrl = `https://api.airtable.com/v0/${airtableBaseId}/${imagesTable}`;
 	
 		// Save the entry content to Airtable
-		const entryTitle = "New Entry"; // Replace this with dynamic entry title if needed
+    const currentEntryTitle = entryTitle || "Untitled Entry"; // Use the Entry Title prop or a fallback value
 		const entryBody = {
-		fields: {
-			"Formatted Text": currentContent, // Full HTML content
-			"Plain Text": plainTextContent, // Clean plain text without images or formatting
-			"Entry Title": entryTitle, // Entry title for linking
-			"User ID": userId, // Adalo User ID
-			"Entry ID": entryId, // Adalo Entry ID
-			"Photo URL": imageUrls[0] || "", // Save the first image URL as text (if available)
-			"Cover Photo": imageUrls[0] ? [{ url: imageUrls[0] }] : undefined, // Save the first image as an attachment (if available)
-		},
-		};
+			fields: {
+			  "Formatted Text": currentContent, // Full HTML content
+			  "Plain Text": plainTextContent, // Clean plain text without images or formatting
+			  "Entry Title": currentEntryTitle, // Use the Entry Title prop from Adalo
+			  "User ID": userId, // Adalo User ID
+			  "Entry ID": entryId, // Adalo Entry ID
+			  "Photo URL": imageUrls[0] || "", // Save the first image URL as text (if available)
+			  "Cover Photo": imageUrls[0] ? [{ url: imageUrls[0] }] : undefined, // Save the first image as an attachment (if available)
+			},
+		  };
+		  
 	
 		try {
 		// Save the entry to the Entries table
@@ -382,15 +383,15 @@ const Editor = ({ value, userId, entryId, onChange }) => {
   <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
     {[
       { color: 'red', title: 'Red' },
-      { color: 'blue', title: 'Blue' },
-      { color: 'green', title: 'Green' },
-      { color: 'black', title: 'Black' },
-      { color: 'purple', title: 'Purple' },
       { color: 'orange', title: 'Orange' },
-      { color: 'pink', title: 'Pink' },
-      { color: 'brown', title: 'Brown' },
-      { color: 'gray', title: 'Gray' },
       { color: 'yellow', title: 'Yellow' },
+      { color: 'green', title: 'Green' },
+      { color: 'blue', title: 'Blue' },
+      { color: 'purple', title: 'Purple' },
+      { color: 'pink', title: 'Pink' },
+      { color: 'gray', title: 'Gray' },
+      { color: 'black', title: 'Black' },
+
     ].map(({ color, title }) => (
       <button
         key={color}
