@@ -22,6 +22,12 @@
       "displayName": "Entry ID",
       "type": "text",
       "default": ""
+    },
+    {
+      "name": "entryTitle", 
+      "displayName": "Entry Title", 
+      "type": "text", 
+      "default": "" 
     }
   ],
   "outputs": [
