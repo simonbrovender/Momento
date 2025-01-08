@@ -45,8 +45,87 @@ const uploadToCloudinary = async (base64String) => {
 	}
   };
   
+  const processTags = async (tagsString, entryId, airtableBaseId, airtableToken) => {
+    const tagsTable = "Tags";
+    const entriesTable = "Entries";
+    const tagsUrl = `https://api.airtable.com/v0/${airtableBaseId}/${tagsTable}`;
+    const entryUrl = `https://api.airtable.com/v0/${airtableBaseId}/${entriesTable}/${entryId}`;
+    const tags = tagsString.split('{}').map(tag => tag.trim()).filter(Boolean);
+  
+    try {
+      // Retrieve the current "Tags" field for the entry
+      const entryResponse = await fetch(entryUrl, {
+        headers: {
+          Authorization: `Bearer ${airtableToken}`,
+        },
+      });
+      if (!entryResponse.ok) {
+        throw new Error(`Failed to fetch entry: ${entryResponse.statusText}`);
+      }
+      const entryData = await entryResponse.json();
+      const currentTagIds = entryData.fields.Tags || []; // Existing tag IDs or an empty array
+  
+      for (const tag of tags) {
+        let tagId;
+        try {
+          // Check if the tag exists
+          const existingTagResponse = await fetch(
+            `${tagsUrl}?filterByFormula=${encodeURIComponent(`{Tag Name}="${tag}"`)}`,
+            {
+              headers: {
+                Authorization: `Bearer ${airtableToken}`,
+              },
+            }
+          );
+          const existingTagData = await existingTagResponse.json();
+  
+          if (existingTagData.records.length > 0) {
+            // Tag exists, get its ID
+            tagId = existingTagData.records[0].id;
+          } else {
+            // Create a new tag
+            const newTagResponse = await fetch(tagsUrl, {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${airtableToken}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                fields: { "Tag Name": tag },
+              }),
+            });
+            const newTagData = await newTagResponse.json();
+            tagId = newTagData.id;
+          }
+  
+          // Add the tag ID to the list of associated tags (if not already added)
+          if (tagId && !currentTagIds.includes(tagId)) {
+            currentTagIds.push(tagId);
+          }
+        } catch (error) {
+          console.error(`Failed to process tag: "${tag}". Error:`, error);
+        }
+      }
+  
+      // Update the entry with the full list of associated tags
+      await fetch(entryUrl, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${airtableToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          fields: {
+            Tags: currentTagIds, // Updated list of tag IDs
+          },
+        }),
+      });
+    } catch (error) {
+      console.error(`Failed to associate tags with entry: ${entryId}. Error:`, error);
+    }
+  };  
 
-  const Editor = ({ value, userId, entryId, entryTitle, onChange }) => {
+  const Editor = ({ value, userId, entryId, entryTitle, tags, onChange }) => {
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -282,6 +361,9 @@ const uploadToCloudinary = async (base64String) => {
 		imageUrls.push(match[1]);
 		}
 	
+		// Assocaite tags with new entry
+    const tagsInput = tags || ""; // Use the `tags` prop or default to an empty string
+
 		const airtableBaseId = "appWmqaUZJE2BydBx"; // Replace with your Airtable Base ID
 		const entriesTable = "Entries"; // Replace with your Entries Table Name
 		const imagesTable = "Images"; // Replace with your Images Table Name
@@ -359,7 +441,11 @@ const uploadToCloudinary = async (base64String) => {
 			}
 		}
 	
-		alert("Entry and images saved to Airtable!"); // Notify user
+    if (tagsInput && entryRecordId) {
+      await processTags(tagsInput, entryRecordId, airtableBaseId, airtableToken);
+   }   
+    
+    alert("Entry, images, and tags saved to Airtable!"); // Notify user    
 		} catch (error) {
 		console.error("Failed to save entry or images in Airtable:", error);
 		alert("Failed to save entry or images. Please try again."); // Notify user
