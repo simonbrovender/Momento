@@ -24,11 +24,17 @@
       "default": ""
     },
     {
-      "name": "entryTitle", 
-      "displayName": "Entry Title", 
-      "type": "text", 
-      "default": "" 
-    }
+      "name": "entryTitle",
+      "displayName": "Entry Title",
+      "type": "text",
+      "default": ""
+    },
+    {
+      "name": "tags",
+      "displayName": "Tags",
+      "type": "text",
+      "default": ""
+    }    
   ],
   "outputs": [
     {
