@@ -415,31 +415,80 @@ const uploadToCloudinary = async (base64String) => {
 				"Image File": [{ url: imageUrl }], // Attach the image URL
 				"Photo URL": imageUrl, // Save the image URL as plain text
 				"Related Entry": [entryRecordId], // Use the record ID for linking
+        "Plain Text": plainTextContent, // Clean plain text without images or formatting
+        "Entry Title": currentEntryTitle, // Use the Entry Title prop from Adalo
+        "User ID": userId, // Adalo User ID
+        "Entry ID": entryId, // Adalo Entry ID
+        "Related Tags": tagsInput
+        ? await Promise.all(
+            tagsInput.split("{}").map(async (tag) => {
+              const tagName = tag.trim();
+      
+              // Skip empty tags
+              if (!tagName) return null;
+      
+              // Check if the tag exists in the Tags table
+              const existingTagResponse = await fetch(
+                `https://api.airtable.com/v0/${airtableBaseId}/Tags?filterByFormula=${encodeURIComponent(
+                  `{Tag Name}="${tagName}"`
+                )}`,
+                {
+                  headers: { Authorization: `Bearer ${airtableToken}` },
+                }
+              );
+      
+              const existingTagData = await existingTagResponse.json();
+      
+              if (existingTagData.records.length > 0) {
+                // Tag exists, return its ID
+                return existingTagData.records[0].id;
+              } else {
+                // Tag doesn't exist, create it
+                const newTagResponse = await fetch(
+                  `https://api.airtable.com/v0/${airtableBaseId}/Tags`,
+                  {
+                    method: "POST",
+                    headers: {
+                      Authorization: `Bearer ${airtableToken}`,
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                      fields: { "Tag Name": tagName },
+                    }),
+                  }
+                );
+      
+                const newTagData = await newTagResponse.json();
+                return newTagData.id;
+              }
+            })
+          ).then((ids) => ids.filter(Boolean)) // Ensure no null values
+        : [], // If no tags, return an empty array      
 				},
 			};
 	
-			const imageResponse = await fetch(imagesUrl, {
-				method: "POST",
-				headers: {
-				Authorization: `Bearer ${airtableToken}`,
-				"Content-Type": "application/json",
-				},
-				body: JSON.stringify(imageBody),
-			});
-	
-			if (!imageResponse.ok) {
-				const errorDetails = await imageResponse.text();
-				console.error("Airtable Image Upload Error Details:", errorDetails);
-				throw new Error(`Error: ${imageResponse.status} - ${imageResponse.statusText}`);
-			}
-	
-			const imageData = await imageResponse.json();
-			console.log("Image added successfully:", imageData);
-			} catch (error) {
-			console.error("Failed to save image in Airtable:", error);
-			alert("Failed to save an image. Please try again.");
-			}
-		}
+      const imageResponse = await fetch(imagesUrl, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${airtableToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(imageBody),
+      });
+  
+      if (!imageResponse.ok) {
+        const errorDetails = await imageResponse.text();
+        console.error("Airtable Image Upload Error Details:", errorDetails);
+        throw new Error(`Error: ${imageResponse.status} - ${imageResponse.statusText}`);
+      }
+  
+      const imageData = await imageResponse.json();
+      console.log("Image added successfully:", imageData);
+    } catch (error) {
+      console.error("Failed to save image in Airtable:", error);
+      alert("Failed to save an image. Please try again.");
+    }
+  }
 	
     if (tagsInput && entryRecordId) {
       await processTags(tagsInput, entryRecordId, airtableBaseId, airtableToken);
