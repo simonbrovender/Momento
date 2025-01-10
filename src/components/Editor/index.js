@@ -13,6 +13,15 @@ import TextStyle from '@tiptap/extension-text-style';
 import Color from '@tiptap/extension-color';
 import { FaSave } from 'react-icons/fa';
 
+const addMetaTag = () => {
+  const meta = document.createElement('meta');
+  meta.name = 'viewport';
+  meta.content = 'width=device-width, initial-scale=1.0';
+  document.head.appendChild(meta);
+};
+
+addMetaTag();
+
 const uploadToCloudinary = async (base64String) => {
 	try {
 	  console.log("Uploading Base64 to Cloudinary..."); // Debugging log
@@ -125,7 +134,7 @@ const uploadToCloudinary = async (base64String) => {
     }
   };  
 
-  const Editor = ({ value, userId, entryId, entryTitle, tags, onChange }) => {
+  const MobileEditor = ({ value, userId, entryId, entryTitle, tags, onChange }) => {
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -253,22 +262,21 @@ const uploadToCloudinary = async (base64String) => {
 <div
   style={{
     display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    position: 'sticky', // Make the toolbar sticky
-    top: '10px', // Stick to the top of the viewport
+    flexDirection: 'column', // Stack the buttons and colors in a column
+    position: 'fixed', // Keep toolbar fixed
+    top: '0px', // Stick to the top of the viewport
     zIndex: '1000', // Ensure it stays above other content
     backgroundColor: '#DAE0FF', // Prevent content from showing through
-    padding: '15px 20px', // Add some spacing for aesthetic
+    padding: '10px', // Adjust padding for smaller screens
     border: 'none', // Optional: Visual separation from the editor
-	borderRadius: '70px', // Add 8px border radius for rounded corners
-	width: 'calc(100% - 40px)', // Make the width 20px narrower than the input field
-	margin: '0 auto', // Center the toolbar horizontally
-    marginBottom: '20px',
+    borderRadius: '8px', // Slightly reduced radius for mobile
+    width: 'calc(90% - 20px)', // Ensure toolbar width fits within the viewport
+    margin: '0 auto', // Center the toolbar container horizontally
+    boxSizing: 'border-box', // Ensure consistent width with padding
   }}
 >
   {/* Left Side Buttons */}
-  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+  <div style={{ display: 'flex', gap: '10px', alignItems: 'center', justifyContent: 'flex-start' }}>
     <button
       onClick={() => editor.chain().focus().toggleBold().run()}
       style={{
@@ -515,7 +523,7 @@ const uploadToCloudinary = async (base64String) => {
   </div>
 
   {/* Right Side Color Buttons */}
-  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+  <div style={{ display: 'flex', gap: '10px', alignItems: 'center', justifyContent: 'flex-start', marginTop: '10px' }}>
     {[
       { color: 'red', title: 'Red' },
       { color: 'orange', title: 'Orange' },
@@ -545,23 +553,25 @@ const uploadToCloudinary = async (base64String) => {
   </div>
 </div>
 
-      <div
-        ref={editorRef}
-        onClick={() => editor.chain().focus().run()}
-        style={{
-          minHeight: '1140px',
-          padding: '12%',
-          border: '1px solid #ddd',
-          borderRadius: '4px',
-          fontFamily: 'Arial, sans-serif',
-          fontSize: '14px',
-          lineHeight: '1.5',
-          boxSizing: 'border-box',
-          overflowY: 'hidden',
-          cursor: 'text',
-          backgroundColor: '#ffffff',
-        }}
-      >
+<div
+  ref={editorRef}
+  onClick={() => editor.chain().focus().run()}
+  style={{
+    minHeight: '500px',
+    padding: '5%',
+    marginTop: '50px', // Pushes the editor content below the toolbar
+    border: '1px solid #ddd',
+    borderRadius: '4px',
+    fontFamily: 'Arial, sans-serif',
+    fontSize: '12px',
+    lineHeight: '1.5',
+    boxSizing: 'border-box',
+    overflowY: 'hidden',
+    cursor: 'text',
+    backgroundColor: '#ffffff',
+  }}
+>
+
         <EditorContent
 			editor={editor}
 			style={{
@@ -594,4 +604,4 @@ const uploadToCloudinary = async (base64String) => {
   );
 };
 
-export default Editor;
+export default MobileEditor;
